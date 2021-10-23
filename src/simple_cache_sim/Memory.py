@@ -1,6 +1,6 @@
 from typing import List
 
-from simple_cache_sim import util
+from src.simple_cache_sim import util
 
 
 class Memory():
@@ -54,7 +54,7 @@ class Memory():
 
     def write_to_memory(self, address: int, data: List[int]):
         """Set the block of main memory (of size self._block_size) that contains
-        the data (4 bytes) at address.
+        the data at address.
 
         :param int address: address of byte within block of memory
         :param list data: bytes to set as block of memory
@@ -65,24 +65,24 @@ class Memory():
         if start < 0 or end > self.memory_size:
             raise IndexError
 
-        if len(data) > self.block_size:
-            raise IOError("Size of data per block is bigger than block_size")
-
-        if len(data) < self.block_size:
-            raise IOError("Size of data per block is smaller than block_size")
+        assert len(data) == self.block_size, "Data Length must be equal to self.block_size"
 
         self.memory_data[start:end] = data
 
     def allocate_memory(self, address: int, data: List[int]):
         '''
-        Allocate all data to memory without blocks
+        Allocate any arbitrary data length to memory without blocks
+
         :param address:
         :param data:
         :return:
         '''
         data_len = len(data)
         start_address = address
-        assert address + data_len < self.memory_size
+        end_address = start_address + data_len
+
+        assert start_address >= 0
+        assert end_address < self.memory_size
 
         self.memory_data[start_address:start_address+data_len] = data
 

@@ -1,8 +1,8 @@
 from typing import List, Union
 import numpy as np
 
-from simple_cache_sim.cache_simulator import CacheSimulator
-
+#from src.simple_cache_sim.cache_simulator import CacheSimulator
+from src.simple_cache_sim.Simulator import Simulator
 
 def is_power_of_two(n):
     return (n & (n-1) == 0) and n != 0
@@ -137,17 +137,19 @@ def matmul_recursive_cache_adaptive(cs, A, B, C, block_sz=1):
     matmul_recursive_helper_cache_adaptive(cs, n, 0, 0, 0, 0, 0, 0)
 
 
-def main():
+def main(option):
 
     # change option here
-    n = 16  # should be power of 2 if use block method
-    block_sz = 16
-    option = 'cache_adapt'  # see methods below
+    n = 8  # should be power of 2 if use block method
+    block_sz = 2
+    #option = 'recursive'  # see methods below
 
     A = np.random.randint(-20, 20, size=(n, n))
     B = np.random.randint(-20, 20, size=(n, n))
 
-    cs = CacheSimulator()
+
+    cs = Simulator(memory_size=2**(n+2), cache_size=2**4, block_size=block_sz, writing_policy="WT",
+                   replacement_policy="LRU")
     load_matrix_to_cs(cs, "A", A)
     load_matrix_to_cs(cs, "B", B)
     cs.allocate("C", n, n, default_val=0)
@@ -172,7 +174,12 @@ def main():
 
     C = np.array([[cs.read("C", i, j) for j in range(n)] for i in range(n)])
     print(f'Is multiplication correct? {(np.matmul(A, B) == C).all()}')
+    print(f'{option} Cache hits: {cs.cpu.hits}, cache miss: {cs.cpu.miss}, total access: {cs.cpu.total_access}')
 
 
 if __name__ == '__main__':
-    main()
+    main('naive')
+    main('transpose')
+    main('cache_eff')
+    main('recursive')
+    main('cache_adapt')

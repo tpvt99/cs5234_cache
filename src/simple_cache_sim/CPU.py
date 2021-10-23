@@ -1,5 +1,5 @@
-from simple_cache_sim.Cache import Cache
-from simple_cache_sim.Memory import Memory
+from src.simple_cache_sim.Cache import Cache
+from src.simple_cache_sim.Memory import Memory
 
 class CPU():
     def __init__(self, cache: Cache, memory: Memory, write_pol: str):
@@ -9,10 +9,12 @@ class CPU():
 
         self.hits = 0
         self.miss = 0
+        self.total_access = 0
 
     def read(self, address):
         # Read a value from cache#
         cache_block = self.cache.read_from_cache(address)
+        self.total_access += 1
 
         if cache_block:
             self.hits += 1
@@ -24,14 +26,15 @@ class CPU():
             cache_block = self.cache.read_from_cache(address)
 
             # Write victim line's block to memory if replaced
-            if victim_info:
-                self.memory.write_to_memory(victim_info[0], victim_info[1])
+            # if victim_info:
+            #     self.memory.write_to_memory(victim_info[0], victim_info[1])
 
         return cache_block[self.cache.get_offset(address)]
 
     def write(self, address, byte):
         """Write a byte to cache."""
         written = self.cache.overwrite_cache(address, byte)
+        self.total_access += 1
 
         if written:
             self.hits += 1
@@ -42,6 +45,7 @@ class CPU():
             block = self.memory.read_from_memory(address)
             block[self.cache.get_offset(address)] = byte
             self.memory.write_to_memory(address, block)
+
         elif self.write_pol == "WB":
             if not written:
                 block = self.memory.read_from_memory(address)

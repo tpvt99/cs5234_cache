@@ -2,9 +2,9 @@ import random
 from math import log
 from typing import List
 
-from simple_cache_sim import util
-from simple_cache_sim.Memory import Memory
-from simple_cache_sim.Block import Block
+from src.simple_cache_sim import util
+from src.simple_cache_sim.Memory import Memory
+from src.simple_cache_sim.Block import Block
 
 
 class Cache():
@@ -104,7 +104,7 @@ class Cache():
         return victim_info
 
     def overwrite_cache(self, address: int, byte: int):
-        """Write a byte to cache. (the address must be a valid one which means it is loaded from the memory to cache)
+        """Write a byte to cache. (the address must be a valid one which means it was loaded from the memory to cache)
 
         :param int address: memory address for data to write to cache
         :param int byte: byte of data to write to cache

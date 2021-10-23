@@ -1,8 +1,8 @@
 
 
-from Memory import Memory
-from CPU import CPU
-from Cache import Cache
+from src.simple_cache_sim.Memory import Memory
+from src.simple_cache_sim.CPU import CPU
+from src.simple_cache_sim.Cache import Cache
 
 # Initialize Array A
 A = [[1, 2, 3],[0,1,2],[2,5,6]]
@@ -51,3 +51,6 @@ for i in range(0,3):
             C[i][j] += getElementA(i,k) * getElementB(k,j)
 
 print(C)
+print(f'Cache hits: {cpu.hits}')
+print(f'Cache miss: {cpu.miss}')
+print(f'Cache total: {cpu.total_access}')
