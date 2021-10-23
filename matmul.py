@@ -135,3 +135,44 @@ def matmul_recursive_cache_adaptive(cs, A, B, C, block_sz=1):
     assert is_power_of_two(A_r)
     n = A_c
     matmul_recursive_helper_cache_adaptive(cs, n, 0, 0, 0, 0, 0, 0)
+
+
+def main():
+
+    # change option here
+    n = 16  # should be power of 2 if use block method
+    block_sz = 16
+    option = 'cache_adapt'  # see methods below
+
+    A = np.random.randint(-20, 20, size=(n, n))
+    B = np.random.randint(-20, 20, size=(n, n))
+
+    cs = CacheSimulator()
+    load_matrix_to_cs(cs, "A", A)
+    load_matrix_to_cs(cs, "B", B)
+    cs.allocate("C", n, n, default_val=0)
+
+    if option == 'transpose':
+        load_matrix_to_cs(cs, "B", B.T)
+    else:
+        load_matrix_to_cs(cs, "B", B)
+
+    if option == 'naive':
+        matmul_naive(cs, "A", "B", "C")
+    elif option == 'transpose':
+        matmul_transposed(cs, "A", "B", "C")
+    elif option == 'cache_eff':
+        matmul_cache_eff(cs, "A", "B", "C", block_sz=block_sz)
+    elif option == 'recursive':
+        matmul_recursive(cs, "A", "B", "C", block_sz=block_sz)
+    elif option == 'cache_adapt':
+        matmul_recursive_cache_adaptive(cs, "A", "B", "C", block_sz=block_sz)
+    else:
+        raise ValueError('Invalid option')
+
+    C = np.array([[cs.read("C", i, j) for j in range(n)] for i in range(n)])
+    print(f'Is multiplication correct? {(np.matmul(A, B) == C).all()}')
+
+
+if __name__ == '__main__':
+    main()
