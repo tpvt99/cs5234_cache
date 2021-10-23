@@ -1,5 +1,5 @@
-from Cache import Cache
-from Memory import Memory
+from simple_cache_sim.Cache import Cache
+from simple_cache_sim.Memory import Memory
 
 class CPU():
     def __init__(self, cache: Cache, memory: Memory, write_pol: str):

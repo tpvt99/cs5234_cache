@@ -1,9 +1,11 @@
-from Block import Block
 import random
-import util
 from math import log
-from Memory import Memory
 from typing import List
+
+from simple_cache_sim import util
+from simple_cache_sim.Memory import Memory
+from simple_cache_sim.Block import Block
+
 
 class Cache():
     # Replacement policies

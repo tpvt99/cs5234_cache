@@ -1,5 +1,7 @@
-import util
 from typing import List
+
+from simple_cache_sim import util
+
 
 class Memory():
     def __init__(self, memory_size, block_size):

@@ -1,4 +1,3 @@
-
 class Block():
     '''
     Block in cache
