@@ -212,9 +212,9 @@ class Cache():
 
 
 mem = Memory(memory_size=2**5, block_size=2)
-cache = Cache(cache_size=2**3, block_size=2, memory_size=2**5, mapping_pol=2, replace_pol="LRU", write_pol="WR", memory=mem)
+cache = Cache(cache_size=2**3, block_size=2, memory_size=2**5, mapping_pol=2, replace_pol="LRU", write_pol="WR")
 
-cache.load_from_memory(0)
-cache.load_from_memory(2)
-cache.overwrite_cache(3, 0x11ff)
-cache.print_section(0, 4)
+# cache.load_from_memory(0)
+# cache.load_from_memory(2)
+# cache.overwrite_cache(3, 0x11ff)
+# cache.print_section(0, 4)

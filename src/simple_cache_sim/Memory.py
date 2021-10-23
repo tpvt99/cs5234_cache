@@ -73,5 +73,17 @@ class Memory():
 
         self.memory_data[start:end] = data
 
+    def allocate_memory(self, address: int, data: List[int]):
+        '''
+        Allocate all data to memory without blocks
+        :param address:
+        :param data:
+        :return:
+        '''
+        data_len = len(data)
+        start_address = address
+        assert address + data_len < self.memory_size
+
+        self.memory_data[start_address:start_address+data_len] = data
 
 

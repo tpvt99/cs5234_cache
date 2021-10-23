@@ -42,8 +42,10 @@ class CPU():
             block = self.memory.read_from_memory(address)
             block[self.cache.get_offset(address)] = byte
             self.memory.write_to_memory(address, block)
-        else:
+        elif self.write_pol == "WB":
             if not written:
                 block = self.memory.read_from_memory(address)
                 self.cache.load_from_memory(address, block)
                 self.cache.overwrite_cache(address, byte)
+        else:
+            raise ValueError("Wrong writing protocol")
