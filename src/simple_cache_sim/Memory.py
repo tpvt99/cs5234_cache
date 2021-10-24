@@ -16,7 +16,7 @@ class Memory():
         self.memory_size = memory_size
         self.block_size = block_size
 
-        self.memory_data = [util.rand_byte() for i in range(self.memory_size)]
+        self.memory_data = [0x00 for i in range(self.memory_size)]
 
     def print_section(self, start, amount):
         """Print a section of main memory by decimal forms.

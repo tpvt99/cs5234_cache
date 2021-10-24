@@ -6,6 +6,8 @@ from src.simple_cache_sim.Cache import Cache
 from src.simple_cache_sim.Memory import Memory
 from src.simple_cache_sim.CPU import CPU
 
+import time
+
 def _get_flat_idx(idx: Tuple[int, ...], dimension: Tuple[int, ...]):
     p = 1
     idx_flat = 0
@@ -25,11 +27,14 @@ class Simulator():
 
         self.last_assigned_address = 0
 
+        begin = time.time()
         self.cache = Cache(cache_size=cache_size, block_size=block_size,
                       memory_size=memory_size, mapping_pol=1,
                       replace_pol=replacement_policy, write_pol=writing_policy)
         self.memory = Memory(memory_size=memory_size, block_size=block_size)
         self.cpu = CPU(cache=self.cache, memory=self.memory, write_pol=writing_policy)
+        end = time.time()
+        print(f"Initialization time: {end-begin}s")
 
     def allocate(self, variable: str, *dimension: int, default_val: Any = None):
         """
