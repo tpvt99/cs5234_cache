@@ -34,10 +34,10 @@ class Memory():
 
         for address in range(start, start + amount, self.block_size):
             print(util.dec_str(address, address_len) + ": ", end = "")
-            print(" ".join([util.dec_str(i, 2) for i in self.read_from_memory(address)]))
+            print(" ".join([util.dec_str(i, 2) for i in self.read_block_from_memory(address)]))
 
 
-    def read_from_memory(self, address: int) -> List[int]:
+    def read_block_from_memory(self, address: int) -> List[int]:
         '''
         Get data inside a block containing this address
         :param address:
@@ -52,7 +52,7 @@ class Memory():
 
         return self.memory_data[start:end]
 
-    def write_to_memory(self, address: int, data: List[int]):
+    def write_block_to_memory(self, address: int, data: List[int]):
         """Set the block of main memory (of size self._block_size) that contains
         the data at address.
 
@@ -71,7 +71,7 @@ class Memory():
 
     def allocate_memory(self, address: int, data: List[int]):
         '''
-        Allocate any arbitrary data length to memory without blocks
+        Allocate any arbitrary data length to memory without blocks (Using this only for initialization of mem)
 
         :param address:
         :param data:

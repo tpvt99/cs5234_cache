@@ -6,7 +6,7 @@ def rand_byte():
 
     :return: random byte (integer from 0 - 2^32)
     """
-    return random.randint(0, 0x0000)
+    return random.randint(0, 0xFF)
 
 
 def dec_str(integer, width):

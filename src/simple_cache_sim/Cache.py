@@ -29,6 +29,10 @@ class Cache():
         self._replace_pol = replace_pol  # Replacement policy
         self._write_pol = write_pol  # Write policy
 
+        self.map_pol = self._mapping_pol # These 3 lines are hilarious, just expose the protected attributes
+        self.rep_pol = self._replace_pol
+        self.wri_pol = self._write_pol
+
         self.cache_size = cache_size  # Cache size
         self.memory_size = memory_size  # Memory size
         self.block_size = block_size  # Block size
@@ -93,7 +97,8 @@ class Cache():
 
         # Store victim info if modified
         if victim.modified:
-            victim_info = (index, victim.data)
+            cache_index = self.blocks.index(victim)
+            victim_info = (self.get_physical_address(cache_index), victim.data)
 
         # Replace victim
         victim.modified = 0
@@ -132,7 +137,8 @@ class Cache():
         return True if line else False
 
     def get_offset(self, address):
-        """Get the offset from within a set from a physical address.
+        """Get the offset from within a set from a physical address. (position of physical address inside block)
+        e.g., block_size = 4, then add = 0 -> offset =0, add = 1 -> offset = 1, add=4 -> offset = 0, add = 5 -> offset = 1
 
         :param int address: memory address to get offset from
         """
@@ -140,6 +146,7 @@ class Cache():
 
     def _get_tag(self, address):
         """Get the cache line tag from a physical address.
+        e.g., cache_size = 32: then add = 0 -> tag = 0, add = 31-> tag = 0, add=32 -> tag = 1, add = 33 -> tag = 1; add 64 -> tag = 2
 
         :param int address: memory address to get tag from
         """
@@ -211,10 +218,14 @@ class Cache():
                 line.use += 1
 
 
-mem = Memory(memory_size=2**5, block_size=2)
-cache = Cache(cache_size=2**3, block_size=2, memory_size=2**5, mapping_pol=2, replace_pol="LRU", write_pol="WR")
+if __name__ == "__main__":
 
-# cache.load_from_memory(0)
-# cache.load_from_memory(2)
-# cache.overwrite_cache(3, 0x11ff)
-# cache.print_section(0, 4)
+    mem = Memory(memory_size=2**8, block_size=4)
+    cache = Cache(cache_size=2**5, block_size=4,
+                  memory_size=2**8, mapping_pol=1,
+                  replace_pol="LRU", write_pol="WT")
+
+    block_at_0 = mem.read_block_from_memory(0)
+    block_at_2 = mem.read_block_from_memory(2)
+    cache.load_from_memory(2, block_at_2)
+    pass

@@ -140,15 +140,18 @@ def matmul_recursive_cache_adaptive(cs, A, B, C, block_sz=1):
 def main(option):
 
     # change option here
-    n = 128  # should be power of 2 if use block method
-    block_sz = 8
+    n = 64  # should be power of 2 if use block method
+    block_sz = 2
     #option = 'recursive'  # see methods below
 
     A = np.random.randint(-20, 20, size=(n, n))
     B = np.random.randint(-20, 20, size=(n, n))
 
+    #A = np.array([[-15, -11], [-1, -8]])
+    #B = np.array([[3,0],[11,-17]])
 
-    cs = Simulator(memory_size=2**24, cache_size=2**8, block_size=block_sz, writing_policy="WT",
+
+    cs = Simulator(memory_size=2**24, cache_size=2**4, block_size=block_sz, writing_policy="WT",
                    replacement_policy="LRU")
     load_matrix_to_cs(cs, "A", A)
     load_matrix_to_cs(cs, "B", B)
@@ -173,6 +176,10 @@ def main(option):
         raise ValueError('Invalid option')
 
     C = np.array([[cs.read("C", i, j) for j in range(n)] for i in range(n)])
+
+    #print(C)
+    #print(np.matmul(A,B))
+
     print(f'Is multiplication correct? {(np.matmul(A, B) == C).all()}')
     print(f'{option} Cache hits: {cs.cpu.hits}, cache miss: {cs.cpu.miss}, '
           f'total access: {cs.cpu.total_access}, propotion {cs.cpu.hits/cs.cpu.total_access}')
