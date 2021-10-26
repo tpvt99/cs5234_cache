@@ -1,20 +1,12 @@
 from typing import List, Union
 import numpy as np
+import time
 
-#from src.simple_cache_sim.cache_simulator import CacheSimulator
-from src.simple_cache_sim.Simulator import Simulator
+from simple_cache_sim.Simulator import Simulator
+
 
 def is_power_of_two(n):
     return (n & (n-1) == 0) and n != 0
-
-
-def load_matrix_to_cs(cs, name, matrix):
-    row_num = len(matrix)
-    col_num = len(matrix[0])
-    cs.allocate(name, row_num, col_num)
-    for i in range(row_num):
-        for j in range(col_num):
-            cs.write(name, i, j, value=matrix[i][j])
 
 
 def matmul_naive(cs, A, B, C):
@@ -30,17 +22,16 @@ def matmul_naive(cs, A, B, C):
             cs.write(C, i, j, value=c)
 
 
-def matmul_transposed(cs, A, B_T, C):
+def matmul_transposed(cs, A, B, C):
     A_r, A_c = cs.get_dimension(A)
-    B_c, B_r = cs.get_dimension(B_T)
+    B_r, B_c = cs.get_dimension(B)
     assert A_c == B_r
     
     for i in range(A_r):
-        for j in range(B_c):
-            c = 0
-            for k in range(A_c):
-                c += cs.read(A, i, k) * cs.read(B_T, j, k)
-            cs.write(C, i, j, value=c)
+        for k in range(A_c):
+            for j in range(B_c):
+                c = cs.read(A, i, k) * cs.read(B, k, j)
+                cs.increment(C, i, j, value=c)
 
 
 def matmul_cache_eff(cs, A, B, C, block_sz=1):
@@ -62,15 +53,16 @@ def matmul_cache_eff(cs, A, B, C, block_sz=1):
                         cs.increment(C, i, j, value=c)
 
 
-def matmul_recursive(cs, A, B, C, block_sz=1):
+def matmul_recursive(cs, A, B, C):
     
     def matmul_recursive_helper(cs, n, a_r, a_c, b_r, b_c, base_arr=None):
     
-        C_arr = base_arr if base_arr else f'C_{a_r}_{a_c}_{b_r}_{b_c}_{n}'
         if base_arr is None:
-            cs.allocate(C_arr, n, n, default_val=0)
+            C_arr = cs.allocate(n, n, default_val=0)
+        else:
+            C_arr = base_arr
 
-        if n <= block_sz:
+        if n <= 2:
             for i in range(n):
                 for j in range(n):
                     c = 0
@@ -101,11 +93,11 @@ def matmul_recursive(cs, A, B, C, block_sz=1):
     matmul_recursive_helper(cs, n, 0, 0, 0, 0, base_arr=C)
 
 
-def matmul_recursive_cache_adaptive(cs, A, B, C, block_sz=1):
+def matmul_recursive_cache_adaptive(cs, A, B, C):
     
     def matmul_recursive_helper_cache_adaptive(cs, n, a_r, a_c, b_r, b_c, c_r, c_c):
     
-        if n <= block_sz:
+        if n <= 2:
             for i in range(n):
                 for j in range(n):
                     c = 0
@@ -137,12 +129,21 @@ def matmul_recursive_cache_adaptive(cs, A, B, C, block_sz=1):
     matmul_recursive_helper_cache_adaptive(cs, n, 0, 0, 0, 0, 0, 0)
 
 
-def main(option):
+def load_matrix_to_cs(cs, matrix):
+    row_num = len(matrix)
+    col_num = len(matrix[0])
+    addr = cs.allocate(row_num, col_num)
+    for i in range(row_num):
+        for j in range(col_num):
+            cs.write(addr, i, j, value=matrix[i][j])
+    return addr
+
+
+def test(option):
 
     # change option here
-    n = 64  # should be power of 2 if use block method
+    n = 256  # should be power of 2 if use block method
     block_sz = 2
-    #option = 'recursive'  # see methods below
 
     A = np.random.randint(-20, 20, size=(n, n))
     B = np.random.randint(-20, 20, size=(n, n))
@@ -150,44 +151,64 @@ def main(option):
     #A = np.array([[-15, -11], [-1, -8]])
     #B = np.array([[3,0],[11,-17]])
 
+    begin = time.time()
 
-    cs = Simulator(memory_size=2**24, cache_size=2**4, block_size=block_sz, writing_policy="WT",
-                   replacement_policy="LRU")
-    load_matrix_to_cs(cs, "A", A)
-    load_matrix_to_cs(cs, "B", B)
-    cs.allocate("C", n, n, default_val=0)
+    cs = Simulator(
+        memory_size=2**24, 
+        cache_size=2**4, 
+        block_size=block_sz, 
+        mapping_pol=None,
+        write_pol="WT",
+        replace_pol="LRU"
+    )
 
-    if option == 'transpose':
-        load_matrix_to_cs(cs, "B", B.T)
-    else:
-        load_matrix_to_cs(cs, "B", B)
+    A_addr = load_matrix_to_cs(cs, A)
+    B_addr = load_matrix_to_cs(cs, B)
+    C_addr = cs.allocate(n, n, default_val=0)
 
+    end = time.time()
+    print(f"Initialization time (sec): {end-begin:.6f}")
+
+    begin = time.time()
     if option == 'naive':
-        matmul_naive(cs, "A", "B", "C")
+        matmul_naive(cs, A_addr, B_addr, C_addr)
     elif option == 'transpose':
-        matmul_transposed(cs, "A", "B", "C")
+        matmul_transposed(cs, A_addr, B_addr, C_addr)
     elif option == 'cache_eff':
-        matmul_cache_eff(cs, "A", "B", "C", block_sz=block_sz)
+        matmul_cache_eff(cs, A_addr, B_addr, C_addr, block_sz=block_sz)
     elif option == 'recursive':
-        matmul_recursive(cs, "A", "B", "C", block_sz=block_sz)
+        matmul_recursive(cs, A_addr, B_addr, C_addr)
     elif option == 'cache_adapt':
-        matmul_recursive_cache_adaptive(cs, "A", "B", "C", block_sz=block_sz)
+        matmul_recursive_cache_adaptive(cs, A_addr, B_addr, C_addr)
     else:
         raise ValueError('Invalid option')
+    end = time.time()
 
-    C = np.array([[cs.read("C", i, j) for j in range(n)] for i in range(n)])
+    C = np.array([[cs.read(C_addr, i, j) for j in range(n)] for i in range(n)])
+
+    stats = cs.get_access_summary()
+    print(f'Option: {option}\n'
+          f'N: {n}\n'
+          f'Block size: {block_sz}\n'
+          f'Is multiplication correct: {(np.matmul(A, B) == C).all()}\n'
+          f'Runtime (sec): {end - begin:.6f}\n'
+          f'Cache hits: {stats["cache_hits"]}\n'
+          f'Cache misses: {stats["cache_misses"]}\n'
+          f'Total access: {stats["total_access"]}\n'
+          f'Hit rate: {stats["hit_rate"]:.8f}\n'
+          f'--------------------------')
 
     #print(C)
     #print(np.matmul(A,B))
 
-    print(f'Is multiplication correct? {(np.matmul(A, B) == C).all()}')
-    print(f'{option} Cache hits: {cs.cpu.hits}, cache miss: {cs.cpu.miss}, '
-          f'total access: {cs.cpu.total_access}, propotion {cs.cpu.hits/cs.cpu.total_access}')
+    # print(f'Is multiplication correct? {(np.matmul(A, B) == C).all()}')
+    # print(f'{option} Cache hits: {cs.cpu.hits}, cache miss: {cs.cpu.miss}, '
+    #       f'total access: {cs.cpu.total_access}, propotion {cs.cpu.hits/cs.cpu.total_access}')
 
 
 if __name__ == '__main__':
-    main('naive')
-    main('transpose')
-    main('cache_eff')
-    main('recursive')
-    main('cache_adapt')
+    test('naive')
+    test('transpose')
+    test('cache_eff')
+    test('recursive')
+    test('cache_adapt')

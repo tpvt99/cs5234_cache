@@ -1,10 +1,10 @@
-from src.simple_cache_sim.Cache import Cache
-from src.simple_cache_sim.Memory import Memory
+from simple_cache_sim.Cache import Cache
+from simple_cache_sim.Memory import Memory
 
 import random
 
 class CPU():
-    def __init__(self, cache: Cache, memory: Memory, write_pol: str):
+    def __init__(self, cache: Cache, memory: Memory, write_pol: str = "WT"):
         self.cache = cache
         self.memory = memory
         self.write_pol = write_pol
@@ -18,26 +18,29 @@ class CPU():
         cache_block = self.cache.read_from_cache(address)
         self.total_access += 1
 
-        if cache_block:
+        if cache_block is not None:
             self.hits += 1
         else:
             self.miss += 1
 
-            block = self.memory.read_block_from_memory(address)
-            victim_info = self.cache.load_from_memory(address, block)
-            cache_block = self.cache.read_from_cache(address)
+            # block = self.memory.read_block_from_memory(address)
+            # victim_info = self.cache.load_from_memory(address, block)
+            # cache_block = self.cache.read_from_cache(address)
 
-            # When reading from cache, it might be miss, then needs to read from memory.
-            # And this can overwrite content in cache. If block is modified which means it has instructions modified the content
-            # of block after accessing from memory, so we need to write this back to memory
-            # Write victim line's block to memory if replaced
-            if victim_info:
-                self.memory.write_block_to_memory(victim_info[0], victim_info[1])
+            cache_block = self.memory.read_block_from_memory(address)
+            victim_info = self.cache.load_from_memory(address, cache_block)
+
+            # # When reading from cache, it might be miss, then needs to read from memory.
+            # # And this can overwrite content in cache. If block is modified which means it has instructions modified the content
+            # # of block after accessing from memory, so we need to write this back to memory
+            # # Write victim line's block to memory if replaced
+            # if victim_info:
+            #     self.memory.write_block_to_memory(victim_info[0], victim_info[1])
 
 
-        value = cache_block[self.cache.get_offset(address)]
+        value = cache_block.data[self.cache.get_offset(address)]
 
-        self.change_cache_size()
+        # self.change_cache_size()
 
         return value
 
@@ -50,21 +53,30 @@ class CPU():
             self.hits += 1
         else:
             self.miss += 1
-
-        if self.write_pol == "WT":
             block = self.memory.read_block_from_memory(address)
-            block[self.cache.get_offset(address)] = byte
-            self.memory.write_block_to_memory(address, block)
+            block.data[self.cache.get_offset(address)] = byte
+            self.cache.load_from_memory(address, block)
+            # self.cache.overwrite_cache(address, byte)
 
-        elif self.write_pol == "WB":
-            if not written:
-                block = self.memory.read_block_from_memory(address)
-                self.cache.load_from_memory(address, block)
-                self.cache.overwrite_cache(address, byte)
-        else:
-            raise ValueError("Wrong writing protocol")
+        # if self.write_pol == "WT":
+        #     block = self.memory.read_block_from_memory(address)
+        #     block[self.cache.get_offset(address)] = byte
+        #     self.memory.write_block_to_memory(address, block)
 
-        self.change_cache_size()
+        # elif self.write_pol == "WB":
+        #     if not written:
+        #         block = self.memory.read_block_from_memory(address)
+        #         self.cache.load_from_memory(address, block)
+        #         self.cache.overwrite_cache(address, byte)
+        # else:
+        #     raise ValueError("Wrong writing protocol")
+
+        # self.change_cache_size()
+
+    def reset_stats(self):
+        self.total_access = 0
+        self.hits = 0
+        self.miss = 0
 
     def change_cache_size(self):
         prob = 0.05
