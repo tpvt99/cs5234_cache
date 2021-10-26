@@ -2,14 +2,14 @@
 
 ## Installation
 
-``` 
+```bash
 cd cs5234_cache  # or to whichever subfolder file is in
 pip install -e .
 ```
 
 ## Python Example
 
-```
+```python
 cs = Simulator(memory_size=65525, cache_size=64, block_size=4)
 
 var_addr = cs.allocate()                          # allocate variable
@@ -28,7 +28,7 @@ print(cs.get_access_summary())                    # get hit/miss counts
 
 ## Running Matrix Multiplication
 
-```
+```bash
 python matmul.py -N {matrix size} -B {block size} -M {cache size}
 ```
 
