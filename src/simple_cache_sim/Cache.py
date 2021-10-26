@@ -6,7 +6,7 @@ from collections import OrderedDict
 from simple_cache_sim import util
 from simple_cache_sim.Memory import Memory
 from simple_cache_sim.Block import Block
-from simple_cache_sim.update_policies import LRUPolicy
+from simple_cache_sim.update_policies import LRUPolicy, LFUPolicy, FIFOPolicy, RandomPolicy
 
 
 class Cache():
@@ -36,7 +36,18 @@ class Cache():
 
         self.num_sets = self.cache_blocks // self._mapping_pol
         self.blocks = [dict() for _ in range(self.num_sets)]
-        self.eviction_handler = [LRUPolicy() for _ in range(self.num_sets)]
+        replace_pol = replace_pol.lower()
+        if replace_pol == "lru":
+            Pol = LRUPolicy
+        elif replace_pol == "lfu":
+            Pol = LFUPolicy
+        elif replace_pol == "fifo":
+            Pol = FIFOPolicy
+        elif replace_pol.startswith("rand"):
+            Pol = RandomPolicy
+        else:
+            raise ValueError(f'Invalid eviction policy: {replace_pol}')
+        self.eviction_handler = [Pol(self._mapping_pol) for _ in range(self.num_sets)]
 
         # self.map_pol = self._mapping_pol # These 3 lines are hilarious, just expose the protected attributes
         # self.rep_pol = self._replace_pol
@@ -80,7 +91,7 @@ class Cache():
         cache_set = self._get_set(address)  # Set of cache lines
 
         # Select the victim (victim is a block in a set)
-        if len(self.blocks[cache_set]) >= self._mapping_pol:
+        if self.eviction_handler[cache_set].is_full():
             victim_tag = self.eviction_handler[cache_set].remove_one()
             self.blocks[cache_set].pop(victim_tag)
 

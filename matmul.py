@@ -1,6 +1,7 @@
 from typing import List, Union
 import numpy as np
 import time
+import argparse
 
 from simple_cache_sim.Simulator import Simulator
 
@@ -139,11 +140,12 @@ def load_matrix_to_cs(cs, matrix):
     return addr
 
 
-def test(option):
+def test(option, args):
 
     # change option here
-    n = 256  # should be power of 2 if use block method
-    block_sz = 2
+    n = args.n  # should be power of 2 if use block method
+    block_sz = args.block_sz
+    cache_sz = args.cache_sz
 
     A = np.random.randint(-20, 20, size=(n, n))
     B = np.random.randint(-20, 20, size=(n, n))
@@ -155,7 +157,7 @@ def test(option):
 
     cs = Simulator(
         memory_size=2**24, 
-        cache_size=2**4, 
+        cache_size=cache_sz, 
         block_size=block_sz, 
         mapping_pol=None,
         write_pol="WT",
@@ -190,6 +192,7 @@ def test(option):
     print(f'Option: {option}\n'
           f'N: {n}\n'
           f'Block size: {block_sz}\n'
+          f'Cache size: {cache_sz}\n'
           f'Is multiplication correct: {(np.matmul(A, B) == C).all()}\n'
           f'Runtime (sec): {end - begin:.6f}\n'
           f'Cache hits: {stats["cache_hits"]}\n'
@@ -198,17 +201,25 @@ def test(option):
           f'Hit rate: {stats["hit_rate"]:.8f}\n'
           f'--------------------------')
 
-    #print(C)
-    #print(np.matmul(A,B))
 
-    # print(f'Is multiplication correct? {(np.matmul(A, B) == C).all()}')
-    # print(f'{option} Cache hits: {cs.cpu.hits}, cache miss: {cs.cpu.miss}, '
-    #       f'total access: {cs.cpu.total_access}, propotion {cs.cpu.hits/cs.cpu.total_access}')
+def main():
+
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('-N', dest='n', type=int, default=128,
+                        help='Matrix size')
+    parser.add_argument('-B', dest='block_sz', type=int, default=8,
+                        help='Block size')
+    parser.add_argument('-M', dest='cache_sz', type=int, default=64,
+                        help='Cache size size')
+
+    args = parser.parse_args()
+
+    test('naive', args)
+    test('transpose', args)
+    test('cache_eff', args)
+    test('recursive', args)
+    test('cache_adapt', args)
 
 
 if __name__ == '__main__':
-    test('naive')
-    test('transpose')
-    test('cache_eff')
-    test('recursive')
-    test('cache_adapt')
+    main()
