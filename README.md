@@ -20,10 +20,10 @@ cs.write(var_addr, value=10)                      # var = 10
 cs.write(matrix_addr, 10, 10, value=50)           # matrix[10][10] = 50
 
 cs.increment(var_addr, value=10)                  # var += 10
+cs.write(matrix_addr, 10, 10, value=20)           # matrix[10][10] += 20
 
-print(cs.read(matrix_addr, 10, 10))               # prints matrix[10][10]
-
-print(cs.get_access_summary())                    # get hit/miss counts
+print(f'matrix[10][10] = {cs.read(matrix_addr, 10, 10)}')
+print(cs.get_access_summary())
 ```
 
 ## Running Matrix Multiplication

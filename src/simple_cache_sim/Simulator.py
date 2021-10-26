@@ -52,7 +52,7 @@ class Simulator():
         addr = self.last_assigned_address
         
         if dimension == ():
-            self._data_dim[addr] = None
+            self._data_dim[addr] = ()
             self.last_assigned_address += 1
             self.memory.allocate(1)
             if default_val is not None:
