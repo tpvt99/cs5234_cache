@@ -2,9 +2,9 @@
 from typing import Optional, Tuple, Any
 from functools import reduce
 
-from simple_cache_sim.Cache import Cache
-from simple_cache_sim.Memory import Memory
-from simple_cache_sim.CPU import CPU
+from src.simple_cache_sim.Cache import Cache
+from src.simple_cache_sim.Memory import Memory
+from src.simple_cache_sim.CPU import CPU
 
 import time
 

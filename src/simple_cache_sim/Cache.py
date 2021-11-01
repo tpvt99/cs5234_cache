@@ -3,10 +3,10 @@ from math import log
 from typing import List
 from collections import OrderedDict
 
-from simple_cache_sim import util
-from simple_cache_sim.Memory import Memory
-from simple_cache_sim.Block import Block
-from simple_cache_sim.update_policies import LRUPolicy, LFUPolicy, FIFOPolicy, RandomPolicy
+from src.simple_cache_sim import util
+from src.simple_cache_sim.Memory import Memory
+from src.simple_cache_sim.Block import Block
+from src.simple_cache_sim.update_policies import LRUPolicy, LFUPolicy, FIFOPolicy, RandomPolicy
 
 
 class Cache():
@@ -49,9 +49,9 @@ class Cache():
             raise ValueError(f'Invalid eviction policy: {replace_pol}')
         self.eviction_handler = [Pol(self._mapping_pol) for _ in range(self.num_sets)]
 
-        # self.map_pol = self._mapping_pol # These 3 lines are hilarious, just expose the protected attributes
-        # self.rep_pol = self._replace_pol
-        # self.wri_pol = self._write_pol
+        self.map_pol = self._mapping_pol # These 3 lines are hilarious, just expose the protected attributes
+        self.rep_pol = self._replace_pol
+        self.wri_pol = self._write_pol
 
         self.cache_size = cache_size  # Cache size
         self.memory_size = memory_size  # Memory size
@@ -170,16 +170,15 @@ class Cache():
     #               util.dec_str(self.get_physical_address(i), address_len) + ">")
     #     print()
 
-    def get_physical_address(self, index):
+    def get_physical_address(self, cache_tag, cache_set):
         """Get the physical address of the cache line at index.
 
         :param int index: index of cache line to get physical address of
         :return: physical address of cache line
         """
-        set_num = index // self._mapping_pol
 
-        return ((self.blocks[index].tag << self._tag_shift) +
-                (set_num << self._set_shift))
+        return ((cache_tag << self._tag_shift) +
+                (cache_set << self._set_shift))
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
-from simple_cache_sim.Cache import Cache
-from simple_cache_sim.Memory import Memory
+from src.simple_cache_sim.Cache import Cache
+from src.simple_cache_sim.Memory import Memory
 
 import random
 
@@ -40,7 +40,7 @@ class CPU():
 
         value = cache_block.data[self.cache.get_offset(address)]
 
-        # self.change_cache_size()
+        #self.change_cache_size()
 
         return value
 
@@ -71,7 +71,7 @@ class CPU():
         # else:
         #     raise ValueError("Wrong writing protocol")
 
-        # self.change_cache_size()
+        #self.change_cache_size()
 
     def reset_stats(self):
         self.total_access = 0
@@ -79,11 +79,11 @@ class CPU():
         self.miss = 0
 
     def change_cache_size(self):
-        prob = 0.05
+        prob = 0.1
         if random.random() > prob:
             return
 
-        cache_lower_limit = 2**4
+        cache_lower_limit = 2**6
         cache_upper_limit = 2**12
         # Step 1. Choose increase or decrease cache size
         prob = 0.5
@@ -98,23 +98,17 @@ class CPU():
                               memory_size=self.cache.memory_size, mapping_pol=self.cache.map_pol,
                               write_pol=self.cache.wri_pol, replace_pol=self.cache.rep_pol)
             # Step 2.b. Choose block index that go to new cache and block index that to be discarded
-            old_block_size = self.cache.block_size
-            new_block_size = new_cache.block_size
-            accepted_block_index = [random.randint(0, old_block_size) for _ in range(new_block_size)]
+            old_block_size = len(self.cache.blocks)
+            new_block_size = len(new_cache.blocks)
+            accepted_block_index = random.sample(range(old_block_size), k=new_block_size)
 
             # Step 2.c. For accepted block, copy to new block, if overwritten a valid line, copy back to memory
             # For rejected block, copy back to memory
-            for index, line in enumerate(self.cache.blocks):
-                if line.valid:
-                    if index in accepted_block_index:
-                        phyiscal_address = self.cache.get_physical_address(index)
-                        victim_info = new_cache.load_from_memory(phyiscal_address, line.data)
-
-                        if victim_info:
-                            self.memory.write_block_to_memory(victim_info[0], victim_info[1])
-                    else:
-                        phyiscal_address = self.cache.get_physical_address(index)
-                        self.memory.write_block_to_memory(phyiscal_address, line.data)
+            for cache_set, line in enumerate(self.cache.blocks):
+                if cache_set in accepted_block_index:
+                    for cache_tag, block in line.items():
+                        phyiscal_address = self.cache.get_physical_address(cache_tag, cache_set)
+                        new_cache.load_from_memory(phyiscal_address, block)
 
             # Step 2.d. Update cache
             self.cache = new_cache
@@ -130,14 +124,10 @@ class CPU():
                               memory_size=self.cache.memory_size, mapping_pol=self.cache.map_pol,
                               write_pol=self.cache.wri_pol, replace_pol=self.cache.rep_pol)
             # Step 3.b Copy from old cache to new cache
-            for index, line in enumerate(self.cache.blocks):
-                if line.valid:
-                    phyiscal_address = self.cache.get_physical_address(index)
-                    victim_info = new_cache.load_from_memory(phyiscal_address, line.data)
-
-                    # A protective condition (this should not be called)
-                    if victim_info:
-                        self.memory.write_block_to_memory(victim_info[0], victim_info[1])
+            for cache_set, line in enumerate(self.cache.blocks):
+                for cache_tag, block in line.items():
+                    phyiscal_address = self.cache.get_physical_address(cache_tag, cache_set)
+                    new_cache.load_from_memory(phyiscal_address, block)
 
             # Step 3.c. Update cache
             self.cache = new_cache
@@ -145,7 +135,6 @@ class CPU():
     def temp_dec(self):
         cache_lower_limit = 2 ** 2
         cache_upper_limit = 2 ** 12
-
         current_cache_size = self.cache.cache_size
         new_cache_size = current_cache_size // 2
         if new_cache_size < cache_lower_limit:
@@ -155,22 +144,18 @@ class CPU():
                           memory_size=self.cache.memory_size, mapping_pol=self.cache.map_pol,
                           write_pol=self.cache.wri_pol, replace_pol=self.cache.rep_pol)
         # Step 2.b. Choose block index that go to new cache and block index that to be discarded
-        old_block_size = self.cache.block_size
-        new_block_size = new_cache.block_size
-        accepted_block_index = [0,2]
+        old_block_size = len(self.cache.blocks)
+        new_block_size = len(new_cache.blocks)
+        accepted_block_index = random.sample(range(old_block_size), k=new_block_size)
 
         # Step 2.c. For accepted block, copy to new block, if overwritten a valid line, copy back to memory
         # For rejected block, copy back to memory
-        for index, line in enumerate(self.cache.blocks):
-            if index in accepted_block_index:
-                phyiscal_address = self.cache.get_physical_address(index)
-                victim_info = new_cache.load_from_memory(phyiscal_address, line.data)
+        for cache_set, line in enumerate(self.cache.blocks):
+            if cache_set in accepted_block_index:
+                for cache_tag, block in line.items():
+                    phyiscal_address = self.cache.get_physical_address(cache_set, cache_tag)
+                    new_cache.load_from_memory(phyiscal_address, block)
 
-                if victim_info:
-                    self.memory.write_block_to_memory(victim_info[0], victim_info[1])
-            else:
-                phyiscal_address = self.cache.get_physical_address(index)
-                self.memory.write_block_to_memory(phyiscal_address, line.data)
 
         # Step 2.d. Update cache
         self.cache = new_cache
@@ -179,18 +164,20 @@ if __name__ == "__main__":
 
     mem = Memory(memory_size=2**8, block_size=2)
     cache = Cache(cache_size=2**3, block_size=2,
-                  memory_size=2**8, mapping_pol=1,
+                  memory_size=2**8, mapping_pol=2,
                   replace_pol="LRU", write_pol="WT")
     cpu = CPU(cache, mem, write_pol="WT")
+
+    mem.allocate(129)
 
     block_at_0 = mem.read_block_from_memory(0)
     block_at_1 = mem.read_block_from_memory(2)
     block_at_2 = mem.read_block_from_memory(4)
-    block_at_3 = mem.read_block_from_memory(6)
+    block_at_3 = mem.read_block_from_memory(31)
     cache.load_from_memory(0, block_at_0)
     cache.load_from_memory(2, block_at_1)
     cache.load_from_memory(4, block_at_2)
-    cache.load_from_memory(6, block_at_3)
+    cache.load_from_memory(31, block_at_3)
 
     cpu.temp_dec()
 

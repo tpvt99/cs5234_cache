@@ -1,7 +1,7 @@
 from typing import List
 
-from simple_cache_sim.Block import Block
-from simple_cache_sim import util
+from src.simple_cache_sim.Block import Block
+from src.simple_cache_sim import util
 
 
 class Memory():
