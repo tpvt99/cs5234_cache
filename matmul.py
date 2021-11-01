@@ -3,7 +3,7 @@ import numpy as np
 import time
 import argparse
 
-from simple_cache_sim.Simulator import Simulator
+from src.simple_cache_sim.Simulator import Simulator
 
 
 def is_power_of_two(n):
@@ -205,7 +205,7 @@ def test(option, args):
 def main():
 
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('-N', dest='n', type=int, default=128,
+    parser.add_argument('-N', dest='n', type=int, default=64,
                         help='Matrix size')
     parser.add_argument('-B', dest='block_sz', type=int, default=8,
                         help='Block size')
@@ -219,7 +219,6 @@ def main():
     test('cache_eff', args)
     test('recursive', args)
     test('cache_adapt', args)
-
 
 if __name__ == '__main__':
     main()
