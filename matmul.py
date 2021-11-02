@@ -23,16 +23,16 @@ def matmul_naive(cs, A, B, C):
             cs.write(C, i, j, value=c)
 
 
-def matmul_transposed(cs, A, B, C):
-    A_r, A_c = cs.get_dimension(A)
-    B_r, B_c = cs.get_dimension(B)
-    assert A_c == B_r
-    
-    for i in range(A_r):
-        for k in range(A_c):
-            for j in range(B_c):
-                c = cs.read(A, i, k) * cs.read(B, k, j)
-                cs.increment(C, i, j, value=c)
+# def matmul_transposed(cs, A, B, C):
+#     A_r, A_c = cs.get_dimension(A)
+#     B_r, B_c = cs.get_dimension(B)
+#     assert A_c == B_r
+#
+#     for i in range(A_r):
+#         for k in range(A_c):
+#             for j in range(B_c):
+#                 c = cs.read(A, i, k) * cs.read(B, k, j)
+#                 cs.increment(C, i, j, value=c)
 
 
 def matmul_cache_eff(cs, A, B, C, block_sz=1):

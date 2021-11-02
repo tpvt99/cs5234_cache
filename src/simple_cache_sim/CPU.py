@@ -40,7 +40,7 @@ class CPU():
 
         value = cache_block.data[self.cache.get_offset(address)]
 
-        self.change_cache_size()
+        #self.change_cache_size()
 
         return value
 
@@ -71,7 +71,7 @@ class CPU():
         # else:
         #     raise ValueError("Wrong writing protocol")
 
-        self.change_cache_size()
+        #self.change_cache_size()
 
     def reset_stats(self):
         self.total_access = 0
