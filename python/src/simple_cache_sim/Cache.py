@@ -49,9 +49,9 @@ class Cache():
             raise ValueError(f'Invalid eviction policy: {replace_pol}')
         self.eviction_handler = [Pol(self._mapping_pol) for _ in range(self.num_sets)]
 
-        # self.map_pol = self._mapping_pol # These 3 lines are hilarious, just expose the protected attributes
-        # self.rep_pol = self._replace_pol
-        # self.wri_pol = self._write_pol
+        self.map_pol = self._mapping_pol # These 3 lines are hilarious, just expose the protected attributes
+        self.rep_pol = self._replace_pol
+        self.wri_pol = self._write_pol
 
         self.cache_size = cache_size  # Cache size
         self.memory_size = memory_size  # Memory size
@@ -143,43 +143,15 @@ class Cache():
         set_num = (address >> self._set_shift) & set_mask
         return set_num
 
-    # def print_section(self, start, amount):
-    #     """Print a section of the cache.
-
-    #     :param int start: start address to print from
-    #     :param int amount: amount of lines to print
-    #     """
-    #     line_len = len(str(self.cache_size // self.block_size - 1))
-    #     use_len = max([len(str(i.use)) for i in self.blocks])
-    #     tag_len = int(log(self._mapping_pol * self.memory_size // self.cache_size, 2))
-    #     address_len = int(log(self.memory_size, 2))
-
-    #     if start < 0 or (start + amount) > (self.cache_size // self.block_size):
-    #         raise IndexError
-
-    #     print("\n" + " " * line_len + " " * use_len + " U M V T" +
-    #           " " * tag_len + "<DATA @ ADDRESS>")
-
-    #     for i in range(start, start + amount):
-    #         print(util.dec_str(i, line_len) + ": ", end="")
-    #         print(util.dec_str(self.blocks[i].use, use_len) + " ", end="") # Number of Use
-    #         print(util.bin_str(self.blocks[i].modified, 1) + " ", end="")  # If Modified
-    #         print(util.bin_str(self.blocks[i].valid, 1) + " ", end="") # Valid
-    #         print(util.bin_str(self.blocks[i].tag, tag_len) + " <", end="") # Tag
-    #         print(" ".join([util.dec_str(i, 8) for i in self.blocks[i].data]) + " @ " +
-    #               util.dec_str(self.get_physical_address(i), address_len) + ">")
-    #     print()
-
-    def get_physical_address(self, index):
+    def get_physical_address(self, cache_tag, cache_set):
         """Get the physical address of the cache line at index.
 
         :param int index: index of cache line to get physical address of
         :return: physical address of cache line
         """
-        set_num = index // self._mapping_pol
 
-        return ((self.blocks[index].tag << self._tag_shift) +
-                (set_num << self._set_shift))
+        return ((cache_tag << self._tag_shift) +
+                (cache_set << self._set_shift))
 
 
 if __name__ == "__main__":

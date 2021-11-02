@@ -1,4 +1,4 @@
-
+ 
 from typing import Optional, Tuple, Any
 from functools import reduce
 

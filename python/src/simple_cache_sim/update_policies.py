@@ -109,7 +109,7 @@ class RandomPolicy(UpdatePolicy):
     def add_in(self, new_i: int):
         assert len(self.items) < self.n
         self.items.append(new_i)
-        self.item_to_position[item] = len(self.items) - 1
+        self.item_to_position[new_i] = len(self.items) - 1
 
     def remove_one(self):
         rand_i = random.choice(self.items)

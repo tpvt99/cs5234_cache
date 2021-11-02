@@ -27,7 +27,7 @@ def matmul_transposed(cs, A, B, C):
     A_r, A_c = cs.get_dimension(A)
     B_r, B_c = cs.get_dimension(B)
     assert A_c == B_r
-    
+
     for i in range(A_r):
         for k in range(A_c):
             for j in range(B_c):
@@ -205,7 +205,7 @@ def test(option, args):
 def main():
 
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('-N', dest='n', type=int, default=128,
+    parser.add_argument('-N', dest='n', type=int, default=32,
                         help='Matrix size')
     parser.add_argument('-B', dest='block_sz', type=int, default=8,
                         help='Block size')
@@ -219,7 +219,6 @@ def main():
     test('cache_eff', args)
     test('recursive', args)
     test('cache_adapt', args)
-
 
 if __name__ == '__main__':
     main()
