@@ -205,7 +205,7 @@ def test(option, args):
 def main():
 
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('-N', dest='n', type=int, default=64,
+    parser.add_argument('-N', dest='n', type=int, default=32,
                         help='Matrix size')
     parser.add_argument('-B', dest='block_sz', type=int, default=8,
                         help='Block size')

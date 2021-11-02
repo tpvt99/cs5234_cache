@@ -83,7 +83,7 @@ class CPU():
         if random.random() > prob:
             return
 
-        cache_lower_limit = 2**6
+        cache_lower_limit = self.cache.map_pol * self.cache.block_size
         cache_upper_limit = 2**12
         # Step 1. Choose increase or decrease cache size
         prob = 0.5
@@ -132,34 +132,6 @@ class CPU():
             # Step 3.c. Update cache
             self.cache = new_cache
 
-    def temp_dec(self):
-        cache_lower_limit = 2 ** 2
-        cache_upper_limit = 2 ** 12
-        current_cache_size = self.cache.cache_size
-        new_cache_size = current_cache_size // 2
-        if new_cache_size < cache_lower_limit:
-            return
-        # Step 2.b creating new cache
-        new_cache = Cache(cache_size=new_cache_size, block_size=self.cache.block_size,
-                          memory_size=self.cache.memory_size, mapping_pol=self.cache.map_pol,
-                          write_pol=self.cache.wri_pol, replace_pol=self.cache.rep_pol)
-        # Step 2.b. Choose block index that go to new cache and block index that to be discarded
-        old_block_size = len(self.cache.blocks)
-        new_block_size = len(new_cache.blocks)
-        accepted_block_index = random.sample(range(old_block_size), k=new_block_size)
-
-        # Step 2.c. For accepted block, copy to new block, if overwritten a valid line, copy back to memory
-        # For rejected block, copy back to memory
-        for cache_set, line in enumerate(self.cache.blocks):
-            if cache_set in accepted_block_index:
-                for cache_tag, block in line.items():
-                    phyiscal_address = self.cache.get_physical_address(cache_set, cache_tag)
-                    new_cache.load_from_memory(phyiscal_address, block)
-
-
-        # Step 2.d. Update cache
-        self.cache = new_cache
-
 if __name__ == "__main__":
 
     mem = Memory(memory_size=2**8, block_size=2)
@@ -179,6 +151,6 @@ if __name__ == "__main__":
     cache.load_from_memory(4, block_at_2)
     cache.load_from_memory(31, block_at_3)
 
-    cpu.temp_dec()
+    #cpu.temp_dec()
 
     pass

@@ -143,33 +143,6 @@ class Cache():
         set_num = (address >> self._set_shift) & set_mask
         return set_num
 
-    # def print_section(self, start, amount):
-    #     """Print a section of the cache.
-
-    #     :param int start: start address to print from
-    #     :param int amount: amount of lines to print
-    #     """
-    #     line_len = len(str(self.cache_size // self.block_size - 1))
-    #     use_len = max([len(str(i.use)) for i in self.blocks])
-    #     tag_len = int(log(self._mapping_pol * self.memory_size // self.cache_size, 2))
-    #     address_len = int(log(self.memory_size, 2))
-
-    #     if start < 0 or (start + amount) > (self.cache_size // self.block_size):
-    #         raise IndexError
-
-    #     print("\n" + " " * line_len + " " * use_len + " U M V T" +
-    #           " " * tag_len + "<DATA @ ADDRESS>")
-
-    #     for i in range(start, start + amount):
-    #         print(util.dec_str(i, line_len) + ": ", end="")
-    #         print(util.dec_str(self.blocks[i].use, use_len) + " ", end="") # Number of Use
-    #         print(util.bin_str(self.blocks[i].modified, 1) + " ", end="")  # If Modified
-    #         print(util.bin_str(self.blocks[i].valid, 1) + " ", end="") # Valid
-    #         print(util.bin_str(self.blocks[i].tag, tag_len) + " <", end="") # Tag
-    #         print(" ".join([util.dec_str(i, 8) for i in self.blocks[i].data]) + " @ " +
-    #               util.dec_str(self.get_physical_address(i), address_len) + ">")
-    #     print()
-
     def get_physical_address(self, cache_tag, cache_set):
         """Get the physical address of the cache line at index.
 
