@@ -6,13 +6,14 @@ CC = g++
 #  -Wall  - this flag is used to turn on most compiler warnings
 CFLAGS  = -g -Wall -std=c++11
 
-# The build target 
-TARGET = matmul
+all: matmul competitor
 
-all: $(TARGET)
+matmul: matmul.cpp
+	$(CC) $(CFLAGS) -o matmul matmul.cpp
 
-$(TARGET): $(TARGET).cpp
-	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).cpp
+competitor: competitor.cpp
+	$(CC) $(CFLAGS) -o competitor competitor.cpp
 
 clean:
-	$(RM) $(TARGET)
+	$(RM) matmul 
+	$(RM) competitor

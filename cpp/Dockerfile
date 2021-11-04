@@ -1,7 +1,5 @@
 FROM debian:stable-slim
 
-ADD .. /proj
-
 ENTRYPOINT [ "bash" ]
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -19,5 +17,9 @@ RUN         apt-get clean \
                     git \
                     curl \
                     vim \
+                    time \
+                    htop \
+                    valgrind \
+                    screen \
                 && apt-get install -y cmake \
                 && apt-get install -y gcc g++
