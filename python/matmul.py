@@ -35,21 +35,23 @@ def matmul_transposed(cs, A, B, C):
                 cs.increment(C, i, j, value=c)
 
 
-def matmul_cache_eff(cs, A, B, C, block_sz=1):
+def matmul_cache_eff(cs, A, B, C, cache_sz=1):
     A_r, A_c = cs.get_dimension(A)
     B_r, B_c = cs.get_dimension(B)
     assert A_c == B_r
+
+    size_each_block = int(np.sqrt(cache_sz / 2))
     
-    C_r_blocks = ((A_r - 1) // block_sz) + 1
-    C_c_blocks = ((B_c - 1) // block_sz) + 1
-    k_blocks = ((A_c - 1) // block_sz) + 1
+    C_r_blocks = ((A_r - 1) // size_each_block) + 1
+    C_c_blocks = ((B_c - 1) // size_each_block) + 1
+    k_blocks = ((A_c - 1) // size_each_block) + 1
     for blk_i in range(C_r_blocks):
         for blk_j in range(C_c_blocks):
             for blk_k in range(k_blocks):
-                for i in range(blk_i * block_sz, min(A_r, (blk_i + 1) * block_sz)):
-                    for j in range(blk_j * block_sz, min(B_c, (blk_j + 1) * block_sz)):
+                for i in range(blk_i * size_each_block, min(A_r, (blk_i + 1) * size_each_block)):
+                    for j in range(blk_j * size_each_block, min(B_c, (blk_j + 1) * size_each_block)):
                         c = 0
-                        for k in range(blk_k * block_sz, min(A_c, (blk_k + 1) * block_sz)):
+                        for k in range(blk_k * size_each_block, min(A_c, (blk_k + 1) * size_each_block)):
                             c += cs.read(A, i, k) * cs.read(B, k, j)
                         cs.increment(C, i, j, value=c)
 
