@@ -23,19 +23,7 @@ def matmul_naive(cs, A, B, C):
             cs.write(C, i, j, value=c)
 
 
-def matmul_transposed(cs, A, B, C):
-    A_r, A_c = cs.get_dimension(A)
-    B_r, B_c = cs.get_dimension(B)
-    assert A_c == B_r
-
-    for i in range(A_r):
-        for k in range(A_c):
-            for j in range(B_c):
-                c = cs.read(A, i, k) * cs.read(B, k, j)
-                cs.increment(C, i, j, value=c)
-
-
-def matmul_cache_eff(cs, A, B, C, cache_sz=1):
+def matmul_cache_aware(cs, A, B, C, cache_sz=1):
     A_r, A_c = cs.get_dimension(A)
     B_r, B_c = cs.get_dimension(B)
     assert A_c == B_r
@@ -55,8 +43,7 @@ def matmul_cache_eff(cs, A, B, C, cache_sz=1):
                             c += cs.read(A, i, k) * cs.read(B, k, j)
                         cs.increment(C, i, j, value=c)
 
-
-def matmul_recursive(cs, A, B, C):
+def matmul_cache_oblivious(cs, A, B, C):
     
     def matmul_recursive_helper(cs, n, a_r, a_c, b_r, b_c, base_arr=None):
     
@@ -96,7 +83,7 @@ def matmul_recursive(cs, A, B, C):
     matmul_recursive_helper(cs, n, 0, 0, 0, 0, base_arr=C)
 
 
-def matmul_recursive_cache_adaptive(cs, A, B, C):
+def matmul_cache_adaptive(cs, A, B, C):
     
     def matmul_recursive_helper_cache_adaptive(cs, n, a_r, a_c, b_r, b_c, c_r, c_c):
     

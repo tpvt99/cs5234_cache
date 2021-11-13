@@ -36,5 +36,5 @@ class Memory():
         return self.memory_data[address//self.block_size]
 
     def allocate(self, num_blocks: int):
-        num_blocks = min(num_blocks, self.blocks_count - len(self.memory_data))
+        #num_blocks = min(num_blocks, self.blocks_count - len(self.memory_data))
         self.memory_data.extend(Block(self.block_size) for _ in range(num_blocks))

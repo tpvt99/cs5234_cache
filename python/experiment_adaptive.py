@@ -3,25 +3,26 @@
 from matmul import matmul_naive, load_matrix_to_cs, matmul_cache_aware, matmul_cache_oblivious, matmul_cache_adaptive
 import numpy as np
 import time
-import argparse
+
 import matplotlib.pyplot as plt
+from simple_cache_sim.SimulatorAdaptive import SimulatorAdaptive
 
-from simple_cache_sim.Simulator import Simulator
 
-def test(option, n, block_sz, cache_sz, mapping_pol, replace_pol):
+def test(option, n, block_sz, cache_sz, mapping_pol, replace_pol, c1):
 
     A = np.random.randint(-20, 20, size=(n, n))
     B = np.random.randint(-20, 20, size=(n, n))
 
     begin = time.time()
 
-    cs = Simulator(
+    cs = SimulatorAdaptive(
         memory_size=2**24,
         cache_size=cache_sz,
         block_size=block_sz,
         mapping_pol=mapping_pol,
         write_pol="WT",
-        replace_pol=replace_pol
+        replace_pol=replace_pol,
+        c1=c1
     )
 
     A_addr = load_matrix_to_cs(cs, A)
@@ -82,41 +83,10 @@ def draw_superimposed_bar_graph(hits, access, title, x_ticks_labels):
     plt.title(title)
     plt.show()
 
-def draw_bar_together(miss, access, title, x_ticks_labels, legends):
-    ind = np.arange(miss.shape[1])
-    ratio = miss / access
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-
-    for size_index in range(miss.shape[1]):
-        ax.bar(x=ind+0.2*size_index, height=ratio[size_index], width=0.2, align='center', label=legends[size_index])
-    ax.legend()
-
-    plt.xticks(ind, x_ticks_labels)
-
-    rects = ax.patches
-    # Make some labels.
-    #Divide by 2 because we have 2 bars per each change
-    # labels = [f"{hits[i]/access[i]:.2f}" for i in range(len(rects))]
-
-    for rect in rects:
-        height = rect.get_height()
-        ax.text(
-                 rect.get_x() + rect.get_width() / 2, height + 0.002, round(height,2), ha="center", va="bottom",
-        fontsize='small')
-
-    plt.title(title)
-    plt.show()
 
 # Set 1. Testing mapping policy
 
-def set_1_testing_separately_naive():
-    n = 16
-    block_size = [2, 4, 8, 16, 32]#[8, 32, 64, 128, 256]
-    mapping_policy = None # Ideal cache should be None
-    cache_size = [4, 16, 64, 256, 1024]#[64, 1024, 4096, 16384, 65536] # Tall-cache size
-    replace_policy = "lru"
+def set_1_testing_separately_naive(n, block_size, cache_size, mapping_policy, replace_policy, c1):
 
     cache_misses = []
     cache_access = []
@@ -125,7 +95,7 @@ def set_1_testing_separately_naive():
     option = "naive"
     for i in range(len(block_size)):
         miss, access, run_time = test(option, n = n, block_sz=block_size[i], cache_sz=cache_size[i],
-                mapping_pol = mapping_policy, replace_pol = replace_policy)
+                mapping_pol = mapping_policy, replace_pol = replace_policy, c1=c1)
         cache_misses.append(miss)
         cache_access.append(access)
         total_time.append(run_time)
@@ -137,12 +107,7 @@ def set_1_testing_separately_naive():
                                 f"cs = {cache_size}, \n with varying block_size and cache_size",
                                 label)
 
-def set_1_testing_separately_aware():
-    n = 256
-    block_size = [2, 4, 8, 16, 32]#[8, 32, 64, 128, 256]
-    mapping_policy = None # Ideal cache should be None
-    cache_size = [4, 16, 64, 256, 1024]#[64, 1024, 4096, 16384, 65536] # Tall-cache size
-    replace_policy = "lru"
+def set_1_testing_separately_aware(n, block_size, cache_size, mapping_policy, replace_policy, c1):
 
     cache_misses = []
     cache_access = []
@@ -151,7 +116,7 @@ def set_1_testing_separately_aware():
     option = "aware"
     for i in range(len(block_size)):
         miss, access, run_time = test(option, n = n, block_sz=block_size[i], cache_sz=cache_size[i],
-                mapping_pol = mapping_policy, replace_pol = replace_policy)
+                mapping_pol = mapping_policy, replace_pol = replace_policy, c1=c1)
         cache_misses.append(miss)
         cache_access.append(access)
         total_time.append(run_time)
@@ -163,12 +128,7 @@ def set_1_testing_separately_aware():
                                 f"cs = {cache_size}, \n with varying block_size and cache_size",
                                 label)
 
-def set_1_testing_separately_oblivious():
-    n = 64
-    block_size = [2, 4, 8, 16, 32]#[8, 32, 64, 128, 256]
-    mapping_policy = None # Ideal cache should be None
-    cache_size = [4, 16, 64, 256, 1024]#[64, 1024, 4096, 16384, 65536] # Tall-cache size
-    replace_policy = "lru"
+def set_1_testing_separately_oblivious(n, block_size, cache_size, mapping_policy, replace_policy, c1):
 
     cache_misses = []
     cache_access = []
@@ -177,7 +137,7 @@ def set_1_testing_separately_oblivious():
     option = "oblivious"
     for i in range(len(block_size)):
         miss, access, run_time = test(option, n = n, block_sz=block_size[i], cache_sz=cache_size[i],
-                mapping_pol = mapping_policy, replace_pol = replace_policy)
+                mapping_pol = mapping_policy, replace_pol = replace_policy, c1=c1)
         cache_misses.append(miss)
         cache_access.append(access)
         total_time.append(run_time)
@@ -189,12 +149,7 @@ def set_1_testing_separately_oblivious():
                                 f"cs = {cache_size}, \n with varying block_size and cache_size",
                                 label)
 
-def set_1_testing_separately_adaptive():
-    n = 256
-    block_size = [2, 4, 8, 16, 32]#[8, 32, 64, 128, 256]
-    mapping_policy = None # Ideal cache should be None
-    cache_size = [4, 16, 64, 256, 1024]#[64, 1024, 4096, 16384, 65536] # Tall-cache size
-    replace_policy = "lru"
+def set_1_testing_separately_adaptive(n, block_size, cache_size, mapping_policy, replace_policy, c1):
 
     cache_misses = []
     cache_access = []
@@ -203,7 +158,7 @@ def set_1_testing_separately_adaptive():
     option = "adaptive"
     for i in range(len(block_size)):
         miss, access, run_time = test(option, n = n, block_sz=block_size[i], cache_sz=cache_size[i],
-                mapping_pol = mapping_policy, replace_pol = replace_policy)
+                mapping_pol = mapping_policy, replace_pol = replace_policy, c1=c1)
         cache_misses.append(miss)
         cache_access.append(access)
         total_time.append(run_time)
@@ -216,33 +171,15 @@ def set_1_testing_separately_adaptive():
                                 label)
 
 
-def set_2_testing_together():
-    n = 64
-    block_size = [4, 8, 16, 32]  # [8, 32, 64, 128, 256]
-    mapping_policy = None  # Ideal cache should be None
-    cache_size = [16, 64, 256, 1024]  # [64, 1024, 4096, 16384, 65536] # Tall-cache size
-    replace_policy = "lru"
-    option = ["naive", "aware", "oblivious", "adaptive"]
-
-    cache_misses = np.zeros(shape=(len(cache_size), len(option)))
-    cache_access = np.zeros(shape=(len(cache_size), len(option)))
-    label = []
-
-    for j in range(len(cache_size)):
-        for i in range(len(option)):
-            miss, access, run_time = test(option[i], n=n, block_sz=block_size[j], cache_sz=cache_size[j],
-                                         mapping_pol=mapping_policy, replace_pol=replace_policy)
-            cache_misses[j][i] = miss
-            cache_access[j][i] = access
-        label.append(f"bs:{block_size[j]}, cs:{cache_size[j]}")
-
-    draw_bar_together(cache_misses, cache_access,
-                                f"Cache miss ratio of 4 different algorithms when n={n}",
-                                label, option)
-
 # Stress-test with
-#set_1_testing_separately_aware()
-#set_1_testing_separately_naive()
-#set_1_testing_separately_oblivious()
-#set_1_testing_separately_adaptive()
-set_2_testing_together()
+c1 = 1
+n = 256
+block_size = [2, 4, 8, 16, 32]#[8, 32, 64, 128, 256]
+mapping_policy = 1 # Ideal cache should be None
+cache_size = [c1*i**2 for i in block_size]#[64, 1024, 4096, 16384, 65536] # Tall-cache size
+replace_policy = "lru"
+
+set_1_testing_separately_naive(n, block_size, cache_size, mapping_policy, replace_policy, c1)
+set_1_testing_separately_aware(n, block_size, cache_size, mapping_policy, replace_policy, c1)
+set_1_testing_separately_oblivious(n, block_size, cache_size, mapping_policy, replace_policy, c1)
+set_1_testing_separately_adaptive(n, block_size, cache_size, mapping_policy, replace_policy, c1)

@@ -18,7 +18,6 @@ def _get_flat_idx(idx: Tuple[int, ...], dimension: Tuple[int, ...]):
         p *= d
     return idx_flat
 
-
 class Simulator():
     def __init__(self, memory_size: int, cache_size: int, block_size: int, 
                  mapping_pol: int = None, replace_pol: str = "LRU", write_pol: str = "WT"):

@@ -157,8 +157,8 @@ class Cache():
 if __name__ == "__main__":
 
     mem = Memory(memory_size=2**8, block_size=4)
-    cache = Cache(cache_size=2**5, block_size=4,
-                  memory_size=2**8, mapping_pol=1,
+    cache = Cache(cache_size=2**8, block_size=1,
+                  memory_size=2**8, mapping_pol=None,
                   replace_pol="LRU", write_pol="WT")
 
     block_at_0 = mem.read_block_from_memory(0)
