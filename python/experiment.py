@@ -217,7 +217,7 @@ def set_1_testing_separately_adaptive():
 
 
 def set_2_testing_together():
-    n = 64
+    n = 256
     block_size = [4, 8, 16, 32]  # [8, 32, 64, 128, 256]
     mapping_policy = None  # Ideal cache should be None
     cache_size = [16, 64, 256, 1024]  # [64, 1024, 4096, 16384, 65536] # Tall-cache size
