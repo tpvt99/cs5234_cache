@@ -90,7 +90,7 @@ def draw_bar_together(miss, access, title, x_ticks_labels, legends):
     ax = fig.add_subplot(111)
 
     for size_index in range(miss.shape[1]):
-        ax.bar(x=ind+0.2*size_index, height=ratio[size_index], width=0.2, align='center', label=legends[size_index])
+        ax.bar(x=ind+0.2*size_index, height=ratio[:, size_index], width=0.2, align='center', label=legends[size_index])
     ax.legend()
 
     plt.xticks(ind, x_ticks_labels)

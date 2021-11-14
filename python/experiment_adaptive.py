@@ -101,7 +101,8 @@ def set_1_testing_separately_naive(n, block_size, cache_size, mapping_policy, re
         total_time.append(run_time)
         label.append(f"cs:{cache_size[i]}\nbs:{block_size[i]}")
 
-
+    print(cache_access)
+    print(cache_misses)
     draw_superimposed_bar_graph(cache_misses, cache_access,
                                 f"{option} n={n}, bs={block_size}, "
                                 f"cs = {cache_size}, \n with varying block_size and cache_size",
@@ -122,6 +123,8 @@ def set_1_testing_separately_aware(n, block_size, cache_size, mapping_policy, re
         total_time.append(run_time)
         label.append(f"cs:{cache_size[i]}\nbs:{block_size[i]}")
 
+    print(cache_access)
+    print(cache_misses)
 
     draw_superimposed_bar_graph(cache_misses, cache_access,
                                 f"{option} n={n}, bs={block_size}, "
@@ -172,14 +175,67 @@ def set_1_testing_separately_adaptive(n, block_size, cache_size, mapping_policy,
 
 
 # Stress-test with
-c1 = 1
-n = 256
-block_size = [2, 4, 8, 16, 32]#[8, 32, 64, 128, 256]
-mapping_policy = 1 # Ideal cache should be None
-cache_size = [c1*i**2 for i in block_size]#[64, 1024, 4096, 16384, 65536] # Tall-cache size
-replace_policy = "lru"
+# c1 = 1
+# n = 64
+# block_size = [4, 8, 16, 32]#[8, 32, 64, 128, 256]
+# mapping_policy = None # Ideal cache should be None
+# cache_size = [c1*i**2 for i in block_size]#[64, 1024, 4096, 16384, 65536] # Tall-cache size
+# replace_policy = "lru"
+# #
+# set_1_testing_separately_naive(n, block_size, cache_size, mapping_policy, replace_policy, c1)
+# set_1_testing_separately_aware(n, block_size, cache_size, mapping_policy, replace_policy, c1)
+# set_1_testing_separately_oblivious(n, block_size, cache_size, mapping_policy, replace_policy, c1)
+# set_1_testing_separately_adaptive(n, block_size, cache_size, mapping_policy, replace_policy, c1)
+def draw_bar_together(miss, access, title, x_ticks_labels, legends):
+    ind = np.arange(miss.shape[1])
+    ratio = miss / access
 
-set_1_testing_separately_naive(n, block_size, cache_size, mapping_policy, replace_policy, c1)
-set_1_testing_separately_aware(n, block_size, cache_size, mapping_policy, replace_policy, c1)
-set_1_testing_separately_oblivious(n, block_size, cache_size, mapping_policy, replace_policy, c1)
-set_1_testing_separately_adaptive(n, block_size, cache_size, mapping_policy, replace_policy, c1)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    for size_index in range(miss.shape[1]):
+        ax.bar(x=ind+0.2*size_index, height=ratio[:, size_index], width=0.2, align='center', label=legends[size_index])
+    ax.legend()
+
+    plt.xticks(ind, x_ticks_labels)
+
+    rects = ax.patches
+    # Make some labels.
+    #Divide by 2 because we have 2 bars per each change
+    # labels = [f"{hits[i]/access[i]:.2f}" for i in range(len(rects))]
+
+    for rect in rects:
+        height = rect.get_height()
+        ax.text(
+                 rect.get_x() + rect.get_width() / 2, height + 0.002, round(height,2), ha="center", va="bottom",
+        fontsize='small')
+
+    plt.title(title)
+    plt.show()
+
+def set_2_testing_together():
+    n = 256
+    c1 = 1
+    block_size = [4, 8, 16, 32]  # [8, 32, 64, 128, 256]
+    mapping_policy = 1  # Ideal cache should be None
+    cache_size = [c1*i**2 for i in block_size]  # [64, 1024, 4096, 16384, 65536] # Tall-cache size
+    replace_policy = "lru"
+    option = ["naive", "aware", "oblivious", "adaptive"]
+    #option = ["naive"]
+    cache_misses = np.zeros(shape=(len(cache_size), len(option)))
+    cache_access = np.zeros(shape=(len(cache_size), len(option)))
+    label = []
+
+    for j in range(len(cache_size)):
+        for i in range(len(option)):
+            miss, access, run_time = test(option[i], n=n, block_sz=block_size[j], cache_sz=cache_size[j],
+                                         mapping_pol=mapping_policy, replace_pol=replace_policy, c1=c1)
+            cache_misses[j][i] = miss
+            cache_access[j][i] = access
+        label.append(f"bs:{block_size[j]}, cs:{cache_size[j]}")
+
+    draw_bar_together(cache_misses, cache_access,
+                                f"Cache miss ratio of 4 different algorithms when n={n}",
+                                label, option)
+
+set_2_testing_together()

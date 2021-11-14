@@ -8,12 +8,17 @@ class CPUAdaptive(CPU):
     def __init__(self, cache: Cache, memory: Memory, write_pol: str = "WT", c1=4):
         super().__init__(cache, memory, write_pol)
         self.c1 = c1
-        #self.memory_profile = MemoryProfile(cache=cache, c1=c1)
-        self.memory_profile = MemoryProfile2(cache=cache)
+        self.memory_profile = MemoryProfile(cache=cache, c1=c1)
+        #self.memory_profile = MemoryProfile2(cache=cache)
 
     def change_cache_size(self):
         cache_lower_limit = self.cache.map_pol * self.cache.block_size
-        new_cache_size = int(self.memory_profile.get_cache_size_at_t(self.cache.cache_size))
+        if self.memory_profile.__class__ == MemoryProfile2:
+            new_cache_size = int(self.memory_profile.get_cache_size_at_t(self.cache.cache_size))
+        elif self.memory_profile.__class__ == MemoryProfile:
+            new_cache_size = int(self.memory_profile.get_cache_size_at_t(self.miss))
+        else:
+            raise Exception("Error")
         new_cache_size = max(new_cache_size, cache_lower_limit)
         if self.total_access % 100000 == 0:
             print(f'Iter {self.total_access} and miss {self.miss} Current cache size {new_cache_size}')
