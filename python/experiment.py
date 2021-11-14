@@ -16,7 +16,7 @@ def test(option, n, block_sz, cache_sz, mapping_pol, replace_pol):
     begin = time.time()
 
     cs = Simulator(
-        memory_size=2**24,
+        memory_size=2**26,
         cache_size=cache_sz,
         block_size=block_sz,
         mapping_pol=mapping_pol,
@@ -82,15 +82,14 @@ def draw_superimposed_bar_graph(hits, access, title, x_ticks_labels):
     plt.title(title)
     plt.show()
 
-def draw_bar_together(miss, access, title, x_ticks_labels, legends):
-    ind = np.arange(miss.shape[1])
-    ratio = miss / access
+def draw_bar_together(y, title, x_ticks_labels, legends):
+    ind = np.arange(y.shape[1])
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    for size_index in range(miss.shape[1]):
-        ax.bar(x=ind+0.2*size_index, height=ratio[size_index], width=0.2, align='center', label=legends[size_index])
+    for size_index in range(y.shape[1]):
+        ax.bar(x=ind+0.2*size_index, height=y[:, size_index], width=0.2, align='center', label=legends[size_index])
     ax.legend()
 
     plt.xticks(ind, x_ticks_labels)
@@ -100,11 +99,11 @@ def draw_bar_together(miss, access, title, x_ticks_labels, legends):
     #Divide by 2 because we have 2 bars per each change
     # labels = [f"{hits[i]/access[i]:.2f}" for i in range(len(rects))]
 
-    for rect in rects:
-        height = rect.get_height()
-        ax.text(
-                 rect.get_x() + rect.get_width() / 2, height + 0.002, round(height,2), ha="center", va="bottom",
-        fontsize='small')
+    # for rect in rects:
+    #     height = rect.get_height()
+    #     ax.text(
+    #              rect.get_x() + rect.get_width() / 2, height + 0.002, round(height,2), ha="center", va="bottom",
+    #     fontsize='small')
 
     plt.title(title)
     plt.show()
@@ -235,9 +234,17 @@ def set_2_testing_together():
             cache_misses[j][i] = miss
             cache_access[j][i] = access
         label.append(f"bs:{block_size[j]}, cs:{cache_size[j]}")
+        
+    print(cache_misses)
+    print(cache_access)
+    print(label)
+    print(option)
 
-    draw_bar_together(cache_misses, cache_access,
-                                f"Cache miss ratio of 4 different algorithms when n={n}",
+    draw_bar_together(cache_misses / cache_access,
+                                f"Cache miss ratio of different algorithms when n={n}",
+                                label, option)
+    draw_bar_together(cache_misses,
+                                f"Cache misses of different algorithms when n={n}",
                                 label, option)
 
 # Stress-test with

@@ -3,3 +3,10 @@ logs**
 **.dSYM
 competitor
 matmul
+fwalg
+mattrans
+A_transposed
+C_data
+P_transposed
+SP_data
+**.DS_Store
